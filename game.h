@@ -61,7 +61,9 @@ public:
     GLboolean  Keys[1024];
     GLuint     Width, Height;
     // 玩家生命值
-    GLuint Lives;
+    GLuint Lives = 3;
+    // 处理按键
+    GLboolean KeysProcessed[1024];
     // 构造函数/析构函数
     Game(GLuint width, GLuint height);
     ~Game();

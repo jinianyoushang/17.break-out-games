@@ -178,8 +178,8 @@
     <None Include="shaders\post_processing.vert" />
     <None Include="shaders\sprite.frag" />
     <None Include="shaders\sprite.vert" />
-    <None Include="shaders\text_2d.frag" />
-    <None Include="shaders\text_2d.vert" />
+    <None Include="shaders\text.frag" />
+    <None Include="shaders\text.vert" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

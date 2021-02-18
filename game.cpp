@@ -45,6 +45,7 @@ Game::~Game()
     delete Ball;
     delete Particles;
     delete Effects;
+    delete Text;
     SoundEngine->drop();
 }
 
@@ -77,6 +78,8 @@ void Game::Init()
     Renderer = new SpriteRenderer(ResourceManager::GetShader("sprite"));
     Particles = new ParticleGenerator(ResourceManager::GetShader("particle"), ResourceManager::GetTexture("particle"), 500);
     Effects = new PostProcessor(ResourceManager::GetShader("postprocessing"), this->Width, this->Height);
+    Text = new TextRenderer(this->Width, this->Height);
+    Text->Load("fonts/ocraext.TTF", 24);
     // Load levels
     GameLevel one; one.Load("levels/one.lvl", this->Width, this->Height * 0.5);
     GameLevel two; two.Load("levels/two.lvl", this->Width, this->Height * 0.5);
@@ -87,6 +90,7 @@ void Game::Init()
     this->Levels.push_back(three);
     this->Levels.push_back(four);
     this->Level = 0;
+
     // Configure game objects
     glm::vec2 playerPos = glm::vec2(this->Width / 2 - PLAYER_SIZE.x / 2, this->Height - PLAYER_SIZE.y);
     Player = new GameObject(playerPos, PLAYER_SIZE, ResourceManager::GetTexture("paddle"));
@@ -95,9 +99,6 @@ void Game::Init()
 
     // Audio
     SoundEngine->play2D("audio/breakout.mp3", GL_TRUE);
-
-    Text = new TextRenderer(this->Width, this->Height);
-    Text->Load("fonts/ocraext.TTF", 24);
     //Effects->Shake = GL_TRUE;
     //Effects->Confuse = GL_TRUE;
     //Effects->Chaos = GL_TRUE;
@@ -107,6 +108,7 @@ void Game::Update(GLfloat dt)
 {
     // 更新对象
     Ball->Move(dt, this->Width);
+
     // 检测碰撞
     this->DoCollisions();
     // Update particles
@@ -122,7 +124,7 @@ void Game::Update(GLfloat dt)
     }
     if (Ball->Position.y >= this->Height) // 球是否接触到底部边界?
     {
-        --this->Lives;
+        this->Lives=this->Lives - 1;
         // 玩家是否已失去所有生命值? : 游戏结束
         if (this->Lives == 0)
         {
@@ -130,6 +132,14 @@ void Game::Update(GLfloat dt)
             this->State = GAME_MENU;
         }
         this->ResetPlayer();
+    }
+
+    if (this->State == GAME_ACTIVE && this->Levels[this->Level].IsCompleted())
+    {
+        this->ResetLevel();
+        this->ResetPlayer();
+        Effects->Chaos = GL_TRUE;
+        this->State = GAME_WIN;
     }
 }
 
@@ -161,11 +171,44 @@ void Game::ProcessInput(GLfloat dt)
         if (this->Keys[GLFW_KEY_SPACE])
             Ball->Stuck = false;
     }
+
+
+    if (this->State == GAME_MENU)
+    {
+        if (this->Keys[GLFW_KEY_ENTER] && !this->KeysProcessed[GLFW_KEY_ENTER])
+        {
+            this->State = GAME_ACTIVE;
+            this->KeysProcessed[GLFW_KEY_ENTER] = GL_TRUE;
+        }
+        if (this->Keys[GLFW_KEY_W] && !this->KeysProcessed[GLFW_KEY_W])
+        {
+            this->Level = (this->Level + 1) % 4;
+            this->KeysProcessed[GLFW_KEY_W] = GL_TRUE;
+        }
+        if (this->Keys[GLFW_KEY_S] && !this->KeysProcessed[GLFW_KEY_S])
+        {
+            if (this->Level > 0)
+                --this->Level;
+            else
+                this->Level = 3;
+            this->KeysProcessed[GLFW_KEY_S] = GL_TRUE;
+        }
+    }
+
+    if (this->State == GAME_WIN)
+    {
+        if (this->Keys[GLFW_KEY_ENTER])
+        {
+            this->KeysProcessed[GLFW_KEY_ENTER] = GL_TRUE;
+            Effects->Chaos = GL_FALSE;
+            this->State = GAME_MENU;
+        }
+    }
 }
 
 void Game::Render()
 {
-    if (this->State == GAME_ACTIVE)
+    if (this->State == GAME_ACTIVE || this->State == GAME_MENU)
     {
         Effects->BeginRender();
         // 绘制背景
@@ -191,6 +234,22 @@ void Game::Render()
 
         Effects->EndRender();
         Effects->Render(glfwGetTime());
+    }
+
+    if (this->State == GAME_MENU)
+    {
+        Text->RenderText("Press ENTER to start", 250.0f, Height / 2, 1.0f);
+        Text->RenderText("Press W or S to select level", 245.0f, Height / 2 + 20.0f, 0.75f);
+    }
+
+    if (this->State == GAME_WIN)
+    {
+        Text->RenderText(
+            "You WON!!!", 320.0, Height / 2 - 20.0, 1.0, glm::vec3(0.0, 1.0, 0.0)
+        );
+        Text->RenderText(
+            "Press ENTER to retry or ESC to quit", 130.0, Height / 2, 1.0, glm::vec3(1.0, 1.0, 0.0)
+        );
     }
 }
 
@@ -312,10 +371,11 @@ void ActivatePowerUp(PowerUp& powerUp)
     }
 }
 
-
+int i = 0;
 // 进行碰撞
 void Game::DoCollisions()
 {
+    // 对砖块的处理
     for (GameObject& box : this->Levels[this->Level].Bricks)
     {
         if (!box.Destroyed)
@@ -340,6 +400,7 @@ void Game::DoCollisions()
                 // 碰撞处理
                 Direction dir = std::get<1>(collision);
                 glm::vec2 diff_vector = std::get<2>(collision);
+
                 if (!(Ball->PassThrough && !box.IsSolid))
                 {
                     if (dir == LEFT || dir == RIGHT) // 水平方向碰撞
@@ -407,6 +468,9 @@ GLboolean ShouldSpawn(GLuint chance)
     GLuint random = rand() % chance;
     return random == 0;
 }
+// 这样的SpawnPowerUps函数以一定几率（1/75普通道具，1/15负面道具）生成一个新的PowerUp对象，
+//并设置其属性。每种道具有特殊的颜色使它们更具有辨识度，同时根据类型决定其持续时间的秒数，
+//若值为0.0f则表示它持续无限长的时间。除此之外，每个道具初始化时传入被摧毁砖块的位置与上一小节给出的对应纹理。
 void Game::SpawnPowerUps(GameObject& block)
 {
     if (ShouldSpawn(75)) // 1 in 75 chance
@@ -417,10 +481,10 @@ void Game::SpawnPowerUps(GameObject& block)
         this->PowerUps.push_back(PowerUp("pass-through", glm::vec3(0.5f, 1.0f, 0.5f), 10.0f, block.Position, ResourceManager::GetTexture("powerup_passthrough")));
     if (ShouldSpawn(75))
         this->PowerUps.push_back(PowerUp("pad-size-increase", glm::vec3(1.0f, 0.6f, 0.4), 0.0f, block.Position, ResourceManager::GetTexture("powerup_increase")));
-    if (ShouldSpawn(15)) // Negative powerups should spawn more often
-        this->PowerUps.push_back(PowerUp("confuse", glm::vec3(1.0f, 0.3f, 0.3f), 15.0f, block.Position, ResourceManager::GetTexture("powerup_confuse")));
-    if (ShouldSpawn(15))
-        this->PowerUps.push_back(PowerUp("chaos", glm::vec3(0.9f, 0.25f, 0.25f), 15.0f, block.Position, ResourceManager::GetTexture("powerup_chaos")));
+    if (ShouldSpawn(20)) // Negative powerups should spawn more often
+        this->PowerUps.push_back(PowerUp("confuse", glm::vec3(1.0f, 0.3f, 0.3f), 7.0f, block.Position, ResourceManager::GetTexture("powerup_confuse")));
+    if (ShouldSpawn(20))
+        this->PowerUps.push_back(PowerUp("chaos", glm::vec3(0.9f, 0.25f, 0.25f), 7.0f, block.Position, ResourceManager::GetTexture("powerup_chaos")));
 }
 
 

@@ -24,9 +24,12 @@ class BallObject : public GameObject
 {
 public:
     // Ball state	
-    GLfloat   Radius;
-    GLboolean Stuck;
-    GLboolean Sticky, PassThrough;
+    GLfloat   Radius; //球的半径
+    GLboolean Stuck; // 球是否在初始位置
+    GLboolean Sticky, PassThrough; 
+    //   Sticky: 当小球与玩家挡板接触时，小球会保持粘在挡板上的状态直到再次按下空格键，这可以让玩家在释放小球前找到更合适的位置
+    //   Pass - Through: 非实心砖块的碰撞处理被禁用，使小球可以穿过并摧毁多个砖块
+
     // Constructor(s)
     BallObject();
     BallObject(glm::vec2 pos, GLfloat radius, glm::vec2 velocity, Texture2D sprite);

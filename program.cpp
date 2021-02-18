@@ -163,7 +163,7 @@ int main(int argc, char* argv[])
 
 
     // Start Game within Menu State
-    Breakout.State = GAME_ACTIVE;
+    Breakout.State = GAME_MENU;
 
     while (!glfwWindowShouldClose(window))
     {
@@ -171,7 +171,7 @@ int main(int argc, char* argv[])
         GLfloat currentFrame = glfwGetTime();
         deltaTime = currentFrame - lastFrame;
         lastFrame = currentFrame;
-        glfwPollEvents();
+
 
         //deltaTime = 0.001f;
         // Manage user input
@@ -186,6 +186,7 @@ int main(int argc, char* argv[])
         Breakout.Render();
 
         glfwSwapBuffers(window);
+        glfwPollEvents();
         // print_fps();
     }
 
@@ -206,7 +207,10 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
         if (action == GLFW_PRESS)
             Breakout.Keys[key] = GL_TRUE;
         else if (action == GLFW_RELEASE)
+        {
             Breakout.Keys[key] = GL_FALSE;
+            Breakout.KeysProcessed[key] = GL_FALSE;
+        }
     }
 }
 

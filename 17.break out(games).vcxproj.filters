@@ -112,13 +112,13 @@
     <None Include="shaders\sprite.vert">
       <Filter>资源文件</Filter>
     </None>
-    <None Include="shaders\text_2d.frag">
-      <Filter>资源文件</Filter>
-    </None>
-    <None Include="shaders\text_2d.vert">
-      <Filter>资源文件</Filter>
-    </None>
     <None Include="shaders\particle.frag">
+      <Filter>资源文件</Filter>
+    </None>
+    <None Include="shaders\text.frag">
+      <Filter>资源文件</Filter>
+    </None>
+    <None Include="shaders\text.vert">
       <Filter>资源文件</Filter>
     </None>
   </ItemGroup>

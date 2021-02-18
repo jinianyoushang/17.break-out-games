@@ -9,10 +9,10 @@
 #include "ball_object.h"
 
 BallObject::BallObject()
-    : GameObject(), Radius(12.5f), Stuck(true) { }
+    : GameObject(), Radius(12.5f), Stuck(true), Sticky(false), PassThrough(false) { }
 
 BallObject::BallObject(glm::vec2 pos, GLfloat radius, glm::vec2 velocity, Texture2D sprite)
-    : GameObject(pos, glm::vec2(radius * 2, radius * 2), sprite, glm::vec3(1.0f), velocity), Radius(radius), Stuck(true) { }
+    : GameObject(pos, glm::vec2(radius * 2, radius * 2), sprite, glm::vec3(1.0f), velocity), Radius(radius), Stuck(true),Sticky(GL_FALSE), PassThrough(GL_FALSE){ }
 
 glm::vec2 BallObject::Move(GLfloat dt, GLuint window_width)
 {
