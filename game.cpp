@@ -62,18 +62,18 @@ void Game::Init()
     ResourceManager::GetShader("particle").Use().SetInteger("sprite", 0);
     ResourceManager::GetShader("particle").SetMatrix4("projection", projection);
     // Load textures
-    ResourceManager::LoadTexture("textures/background.jpg", GL_FALSE, "background");
-    ResourceManager::LoadTexture("textures/awesomeface.png", GL_TRUE, "face");
-    ResourceManager::LoadTexture("textures/block.png", GL_FALSE, "block");
-    ResourceManager::LoadTexture("textures/block_solid.png", GL_FALSE, "block_solid");
-    ResourceManager::LoadTexture("textures/paddle.png", GL_TRUE, "paddle");
-    ResourceManager::LoadTexture("textures/particle.png", GL_TRUE, "particle");
-    ResourceManager::LoadTexture("textures/powerup_speed.png", GL_TRUE, "powerup_speed");
-    ResourceManager::LoadTexture("textures/powerup_sticky.png", GL_TRUE, "powerup_sticky");
-    ResourceManager::LoadTexture("textures/powerup_increase.png", GL_TRUE, "powerup_increase");
-    ResourceManager::LoadTexture("textures/powerup_confuse.png", GL_TRUE, "powerup_confuse");
-    ResourceManager::LoadTexture("textures/powerup_chaos.png", GL_TRUE, "powerup_chaos");
-    ResourceManager::LoadTexture("textures/powerup_passthrough.png", GL_TRUE, "powerup_passthrough");
+    ResourceManager::LoadTexture("textures/background.jpg",  "background");
+    ResourceManager::LoadTexture("textures/awesomeface.png",  "face");
+    ResourceManager::LoadTexture("textures/block.png",  "block");
+    ResourceManager::LoadTexture("textures/block_solid.png",  "block_solid");
+    ResourceManager::LoadTexture("textures/paddle.png",  "paddle");
+    ResourceManager::LoadTexture("textures/particle.png", "particle");
+    ResourceManager::LoadTexture("textures/powerup_speed.png", "powerup_speed");
+    ResourceManager::LoadTexture("textures/powerup_sticky.png", "powerup_sticky");
+    ResourceManager::LoadTexture("textures/powerup_increase.png", "powerup_increase");
+    ResourceManager::LoadTexture("textures/powerup_confuse.png","powerup_confuse");
+    ResourceManager::LoadTexture("textures/powerup_chaos.png",  "powerup_chaos");
+    ResourceManager::LoadTexture("textures/powerup_passthrough.png",  "powerup_passthrough");
     // Set render-specific controls
     Renderer = new SpriteRenderer(ResourceManager::GetShader("sprite"));
     Particles = new ParticleGenerator(ResourceManager::GetShader("particle"), ResourceManager::GetTexture("particle"), 500);
